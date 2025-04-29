@@ -134,34 +134,34 @@ try {
     <?php if ($error): ?>
         <div class="error">
             <h3>❌ Operation Failed</h3>
-            <p><?= htmlspecialchars($error) ?></p>
+            <p><?php echo htmlspecialchars($error) ?></p>
         </div>
     <?php elseif ($executed): ?>
         <div class="success">
             <h3>✅ Truncation Complete</h3>
-            <p>Successfully cleared <?= count($tables_exist) ?> tables</p>
+            <p>Successfully cleared <?php echo count($tables_exist) ?> tables</p>
             <?php if ($missing_tables): ?>
-                <p><?= count($missing_tables) ?> tables not found (see below)</p>
+                <p><?php echo count($missing_tables) ?> tables not found (see below)</p>
             <?php endif; ?>
         </div>
     <?php endif; ?>
 
     <div class="tables">
         <div>
-            <h3>Tables Found <span class="count">(<?= count($tables_exist) ?>)</span></h3>
+            <h3>Tables Found <span class="count">(<?php echo count($tables_exist) ?>)</span></h3>
             <ul>
                 <?php foreach ($tables_exist as $table): ?>
-                    <li>• <?= htmlspecialchars($table) ?></li>
+                    <li>• <?php echo htmlspecialchars($table) ?></li>
                 <?php endforeach; ?>
             </ul>
         </div>
         
         <?php if ($missing_tables): ?>
         <div>
-            <h3>Tables Not Found <span class="count">(<?= count($missing_tables) ?>)</span></h3>
+            <h3>Tables Not Found <span class="count">(<?php echo count($missing_tables) ?>)</span></h3>
             <ul>
                 <?php foreach ($missing_tables as $table): ?>
-                    <li>• <?= htmlspecialchars($table) ?></li>
+                    <li>• <?php echo htmlspecialchars($table) ?></li>
                 <?php endforeach; ?>
             </ul>
         </div>
