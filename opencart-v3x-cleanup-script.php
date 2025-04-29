@@ -1,11 +1,46 @@
 <?php
 /**
- * OpenCart Database Truncation Script with Missing Table Logging
+ * OpenCart Database Truncation Script (DB_PREFIX aware)
  * Truncates catalog, order, and customer related tables
- * Logs missing tables and continues execution
+ * 
+ * WARNING: This will permanently delete all data in specified tables. Use with extreme caution!
+ * Recommended to backup database before running this script.
  */
 
+// Load OpenCart configuration
 require_once('config.php');
+
+$tables_exist = [];
+$missing_tables = [];
+$executed = false;
+$error = null;
+
+// Define table bases (without prefix)
+$table_bases = [
+    // Customer tables
+    'customer', 'customer_activity', 'customer_approval', 'customer_history',
+    'customer_ip', 'customer_login', 'customer_online', 'customer_reward',
+    'customer_search', 'customer_transaction', 'customer_wishlist',
+
+    // Order tables
+    'order', 'order_history', 'order_option', 'order_product', 'order_recurring',
+    'order_recurring_transaction', 'order_subscription', 'order_total', 'order_voucher',
+    'voucher', 'voucher_history', 'cart',
+
+    // Catalog tables
+    'product', 'product_attribute', 'product_description', 'product_discount',
+    'product_filter', 'product_image', 'product_option', 'product_option_value',
+    'product_recurring', 'product_related', 'product_reward', 'product_special',
+    'product_to_category', 'product_to_download', 'product_to_layout', 'product_to_store',
+    'product_viewed', 'category', 'category_description', 'category_filter',
+    'category_path', 'category_to_layout', 'category_to_store', 'manufacturer',
+    'manufacturer_to_store', 'attribute', 'attribute_description', 'attribute_group',
+    'attribute_group_description', 'option', 'option_description', 'option_value',
+    'option_value_description', 'filter', 'filter_description', 'filter_group',
+    'filter_group_description', 'download', 'download_description', 'review',
+    'url_alias', 'coupon', 'coupon_category', 'coupon_product', 'coupon_history',
+    'product_report'
+];
 
 try {
     $db = new mysqli(DB_HOSTNAME, DB_USERNAME, DB_PASSWORD, DB_DATABASE, DB_PORT);
@@ -13,72 +48,132 @@ try {
         throw new Exception("Database connection failed: " . $db->connect_error);
     }
 
-    $table_bases = [
-        // Customer tables
-        'customer', 'customer_activity', 'customer_approval', 'customer_history',
-        'customer_ip', 'customer_login', 'customer_online', 'customer_reward',
-        'customer_search', 'customer_transaction', 'customer_wishlist',
-
-        // Order tables
-        'order', 'order_history', 'order_option', 'order_product', 'order_recurring',
-        'order_recurring_transaction', 'order_subscription', 'order_total', 'order_voucher',
-        'voucher', 'voucher_history', 'cart',
-
-        // Catalog tables
-        'product', 'product_attribute', 'product_description', 'product_discount',
-        'product_filter', 'product_image', 'product_option', 'product_option_value',
-        'product_recurring', 'product_related', 'product_reward', 'product_special',
-        'product_to_category', 'product_to_download', 'product_to_layout', 'product_to_store',
-        'product_viewed', 'category', 'category_description', 'category_filter',
-        'category_path', 'category_to_layout', 'category_to_store', 'manufacturer',
-        'manufacturer_to_store', 'attribute', 'attribute_description', 'attribute_group',
-        'attribute_group_description', 'option', 'option_description', 'option_value',
-        'option_value_description', 'filter', 'filter_description', 'filter_group',
-        'filter_group_description', 'download', 'download_description', 'review',
-        'url_alias', 'coupon', 'coupon_category', 'coupon_product', 'coupon_history',
-        'product_report'
-    ];
-
-    $missing_tables = [];
-    $db->query('SET FOREIGN_KEY_CHECKS = 0');
-
+    // Check table existence
     foreach ($table_bases as $table_base) {
         $table = DB_PREFIX . $table_base;
-        $table_escaped = $db->real_escape_string($table);
+        $result = $db->query("SHOW TABLES LIKE '" . $db->real_escape_string($table) . "'");
         
-        // Check if table exists
-        $result = $db->query("SHOW TABLES LIKE '$table_escaped'");
-        if ($result === false) {
-            throw new Exception("Error checking table existence: " . $db->error);
-        }
-
         if ($result->num_rows > 0) {
-            if (!$db->query("TRUNCATE TABLE `$table`")) {
-                throw new Exception("Error truncating $table: " . $db->error);
-            }
+            $tables_exist[] = $table;
         } else {
             $missing_tables[] = $table;
         }
     }
 
-    $db->query('SET FOREIGN_KEY_CHECKS = 1');
-
-    // Output results
-    echo "Truncation completed successfully.\n";
-    echo "Tables processed: " . (count($table_bases) - count($missing_tables)) . "\n";
-    
-    if (!empty($missing_tables)) {
-        echo "\nMissing tables (" . count($missing_tables) . "):\n";
-        foreach ($missing_tables as $missing) {
-            echo " - $missing\n";
+    // Handle form submission
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
+        $db->query('SET FOREIGN_KEY_CHECKS = 0');
+        
+        foreach ($tables_exist as $table) {
+            if (!$db->query("TRUNCATE TABLE `$table`")) {
+                throw new Exception("Error truncating $table: " . $db->error);
+            }
         }
+        
+        $db->query('SET FOREIGN_KEY_CHECKS = 1');
+        $executed = true;
     }
+
+    $db->close();
 
 } catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
-    exit(1);
-} finally {
-    if (isset($db)) {
-        $db->close();
-    }
+    $error = $e->getMessage();
 }
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenCart Database Truncation Script</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .warning { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; margin: 20px 0; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; }
+        .tables { display: flex; gap: 30px; margin: 20px 0; }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { padding: 3px 0; }
+        button { background: #dc3545; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+        button:hover { background: #c82333; }
+        .count { font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>OpenCart Data Cleanup Utility</h1>
+    
+    <div class="warning">
+        <h3>⚠️ Extreme Danger!</h3>
+        <p>This script will <strong>permanently delete</strong>:</p>
+        <ul>
+            <li>• All products, categories and manufacturers</li>
+            <li>• Every customer account and order history</li>
+            <li>• All coupons, vouchers and shopping carts</li>
+            <li>• Product reviews and customer activities</li>
+        </ul>
+        <p><strong>⚠️ Warning:</strong> This action cannot be undone! Ensure you have:</p>
+        <ol>
+            <li>1. Made a complete database backup</li>
+            <li>2. Tested on a development environment</li>
+            <li>3. Closed the store to public access</li>
+        </ol>
+    </div>
+
+    <?php if ($error): ?>
+        <div class="error">
+            <h3>❌ Operation Failed</h3>
+            <p><?= htmlspecialchars($error) ?></p>
+        </div>
+    <?php elseif ($executed): ?>
+        <div class="success">
+            <h3>✅ Truncation Complete</h3>
+            <p>Successfully cleared <?= count($tables_exist) ?> tables</p>
+            <?php if ($missing_tables): ?>
+                <p><?= count($missing_tables) ?> tables not found (see below)</p>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="tables">
+        <div>
+            <h3>Tables Found <span class="count">(<?= count($tables_exist) ?>)</span></h3>
+            <ul>
+                <?php foreach ($tables_exist as $table): ?>
+                    <li>• <?= htmlspecialchars($table) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+        
+        <?php if ($missing_tables): ?>
+        <div>
+            <h3>Tables Not Found <span class="count">(<?= count($missing_tables) ?>)</span></h3>
+            <ul>
+                <?php foreach ($missing_tables as $table): ?>
+                    <li>• <?= htmlspecialchars($table) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <?php if (!$executed): ?>
+    <form method="post" onsubmit="return confirm('LAST WARNING: This will DELETE ALL DATA! Proceed?')">
+        <input type="hidden" name="confirm" value="1">
+        <p>
+            <button type="submit">EXECUTE DATA DESTRUCTION</button>
+            <br>
+            <small>You must confirm this action twice</small>
+        </p>
+    </form>
+    <?php endif; ?>
+
+    <div class="warning">
+        <h3>🔒 Security Recommendations</h3>
+        <ol>
+            <li>1. Delete this file after use</li>
+            <li>2. Password protect this directory</li>
+            <li>3. Restrict access by IP address</li>
+            <li>4. Keep database backups offline</li>
+        </ol>
+    </div>
+</body>
+</html>
