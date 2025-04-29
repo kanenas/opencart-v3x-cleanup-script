@@ -97,6 +97,19 @@ try {
         button:hover { background: #c82333; }
         .count { font-size: 0.9em; color: #666; }
     </style>
+    <script>
+        function validateForm() {
+            const confirmation1 = confirm("LAST WARNING: This will DELETE ALL DATA!\n\nProceed?");
+            if (!confirmation1) return false;
+            
+            const confirmation2 = confirm("FINAL CONFIRMATION:\nThis will PERMANENTLY DELETE:\n- All products\n- All orders\n- All customer data\n\nType 'DELETE' to confirm:");
+            if (confirmation2) {
+                const answer = prompt("Type DELETE in uppercase to confirm:");
+                return answer === 'DELETE';
+            }
+            return false;
+        }
+    </script>
 </head>
 <body>
     <h1>OpenCart Data Cleanup Utility</h1>
@@ -156,12 +169,12 @@ try {
     </div>
 
     <?php if (!$executed): ?>
-    <form method="post" onsubmit="return confirm('LAST WARNING: This will DELETE ALL DATA! Proceed?')">
+    <form method="post" onsubmit="return validateForm()">
         <input type="hidden" name="confirm" value="1">
         <p>
             <button type="submit">EXECUTE DATA DESTRUCTION</button>
             <br>
-            <small>You must confirm this action twice</small>
+            <small>Requires three confirmations</small>
         </p>
     </form>
     <?php endif; ?>
