@@ -38,7 +38,7 @@ $table_bases = [
     'attribute_group_description', 'option', 'option_description', 'option_value',
     'option_value_description', 'filter', 'filter_description', 'filter_group',
     'filter_group_description', 'download', 'download_description', 'review',
-    'url_alias', 'coupon', 'coupon_category', 'coupon_product', 'coupon_history',
+    'seo_url', 'coupon', 'coupon_category', 'coupon_product', 'coupon_history',
     'product_report'
 ];
 
