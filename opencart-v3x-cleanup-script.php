@@ -33,7 +33,7 @@ $table_bases = [
     'product_recurring', 'product_related', 'product_reward', 'product_special',
     'product_to_category', 'product_to_download', 'product_to_layout', 'product_to_store',
     'product_viewed', 'category', 'category_description', 'category_filter',
-    'category_path', 'category_to_layout', 'category_to_store', 'manufacturer',
+    'category_path', 'category_to_layout', 'category_to_store', 'manufacturer', 'manufacturer_description',
     'manufacturer_to_store', 'attribute', 'attribute_description', 'attribute_group',
     'attribute_group_description', 'option', 'option_description', 'option_value',
     'option_value_description', 'filter', 'filter_description', 'filter_group',
