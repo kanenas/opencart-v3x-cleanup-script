@@ -18,7 +18,7 @@ $error = null;
 // Define table bases (without prefix)
 $table_bases = [
     // Customer tables
-    'customer', 'customer_activity', 'customer_approval', 'customer_history',
+    'address', 'customer', 'customer_activity', 'customer_approval', 'customer_history',
     'customer_ip', 'customer_login', 'customer_online', 'customer_reward',
     'customer_search', 'customer_transaction', 'customer_wishlist',
 
