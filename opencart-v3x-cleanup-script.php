@@ -17,6 +17,9 @@ $error = null;
 
 // Define table bases (without prefix)
 $table_bases = [
+    // Log tables
+    'log_request',
+
     // Customer tables
     'address', 'customer', 'customer_activity', 'customer_approval', 'customer_history',
     'customer_ip', 'customer_login', 'customer_online', 'customer_reward',
