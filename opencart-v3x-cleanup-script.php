@@ -42,7 +42,14 @@ $table_bases = [
     'option_value_description', 'filter', 'filter_description', 'filter_group',
     'filter_group_description', 'download', 'download_description', 'review',
     'url_alias', 'seo_url', 'coupon', 'coupon_category', 'coupon_product', 'coupon_history',
-    'product_report'
+    'product_report',
+
+    // iSenseLabs GDPR
+    'isense_gdpr_deletions', 'isense_gdpr_optins', 'isense_gdpr_policies', 'isense_gdpr_policy_acceptances',
+    'isense_gdpr_requests', 'isense_gdpr_submissions',
+
+    // Custom TABLES
+    'pricelist_product'
 ];
 
 try {
@@ -125,6 +132,8 @@ try {
             <li>• Every customer account and order history</li>
             <li>• All coupons, vouchers and shopping carts</li>
             <li>• Product reviews and customer activities</li>
+            <li>• iSenseLabs GDPR</li>
+            <li>• Custom TABLES</li>
         </ul>
         <p><strong>⚠️ Warning:</strong> This action cannot be undone! Ensure you have:</p>
         <ol>
