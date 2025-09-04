@@ -22,7 +22,7 @@ $table_bases = [
 
     // Customer tables
     'address', 'customer', 'customer_activity', 'customer_approval', 'customer_history',
-    'customer_ip', 'customer_login', 'customer_online', 'customer_reward',
+    'customer_ip', 'customer_login', 'customer_online', 'customer_product_viewed', 'customer_reward',
     'customer_search', 'customer_transaction', 'customer_wishlist',
 
     // Order tables
